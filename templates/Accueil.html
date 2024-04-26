@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+
+<head>
+  <title>QueryPeaks</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/nicepage.css') }}" media="screen">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Accueil.css') }}" media="screen">
+
+  <!-- Plugins -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <script class="u-script" type="text/javascript" src="{{ url_for('static', filename='js/jquery.js') }}"
+    defer=""></script>
+  <script class="u-script" type="text/javascript" src="{{ url_for('static', filename='js/nicepage.js') }}"
+    defer=""></script>
+  <script class="u-script" type="text/javascript" src="{{ url_for('static', filename='js/leaflet.textpath.js') }}"
+    defer=""></script>
+
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet-geocoder-ban.css') }}">
+  <script src="{{ url_for('static', filename='js/leaflet-geocoder-ban.js') }}"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.legend.css') }}">
+  <script src="{{ url_for('static', filename='js/leaflet.legend.js') }}"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"
+    charset="utf-8"></script>
+
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+  <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css'
+    rel='stylesheet' />
+
+  <link id="u-theme-google-font" rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,600,600i,700,700i,800,800i">
+</head>
+
+<body class="u-body">
+
+
+
+  <header class="u-clearfix u-custom-color-1 u-header u-header" id="sec-2b19">
+    <div class="u-clearfix u-sheet u-sheet-1">
+      <a href="/" data-page-id="1702119740" class="u-image u-logo u-image-1" data-image-width="1080"
+        data-image-height="3269" title="Accueil">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" class="u-logo-image u-logo-image-1">
+      </a>
+      <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-1">
+
+        <div class="u-custom-menu u-nav-container">
+          <li class="u-nav-item">
+            <a class="u-button-style u-nav-link u-text-active-palette-5-dark-3 u-text-hover-palette-2-base" href="/"
+              style="padding: 10px 32px;"><b>QueryPeaks</b></a>
+          </li>
+        </div>
+      </nav>
+
+      <!-- Onglets -->
+      <nav class="u-menu u-menu-dropdown u-offcanvas u-menu-2">
+        <div class="u-custom-menu u-nav-container">
+          <li class="u-nav-item"><a class="u-button-style u-nav-link u-text-active-black u-text-hover-palette-2-base"
+              href="/Tutoriel" style="padding: 10px 20px;">Tutoriel</a>
+          </li>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+
+
+  <div class="row">
+
+
+
+    <!-- Liste des catégories -->
+
+
+    <div class="column">
+      <div id="course">
+        <b>Quelle altitude pour la prochaine rando ?</b>
+      </div>
+
+      <!-- Slider -->
+
+      <div class="range_container">
+        <div class="sliders_control">
+          <input id="fromSlider" type="range" value="10" min="0" max="9000" />
+          <input id="toSlider" type="range" value="2000" min="0" max="9000" />
+        </div>
+        <div class="form_control">
+          <div class="form_control_container">
+            <div class="form_control_container__time">Min</div>
+            <input class="form_control_container__time__input" type="number" id="fromInput" value="10" min="0"
+              max="9000" />
+          </div>
+          <div class="form_control_container">
+            <div class="form_control_container__time">Max</div>
+            <input class="form_control_container__time__input" type="number" id="toInput" value="2000" min="0"
+              max="9000" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Carte -->
+    <div class="column">
+      <!-- Récupération des données de postgres pour les transmettre au JS -->
+      <div id="getdata" data-markers='{{ markers|tojson }}'></div>
+      <div id="map"></div>
+      <script src="{{ url_for('static', filename='js/Accueil.js') }}"></script>
+    </div>
+  </div>
+
+
+</body>
+
+</html>
