@@ -1,6 +1,5 @@
-//var user_position ='';
-
 var user_position = { lat: 45.756681, lng: 4.831715 };
+var peakMarkers = '';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////// fonction pour debuguer: liste tous les arguments d'un objet javascript /////////////////////////
@@ -172,26 +171,28 @@ outputElement.textContent = maxEle;
 const minEle = findMin(peakList)
 var outputElement = document.getElementById("minEle");
 outputElement.textContent = minEle;
+showLayer(peakList);
 
-var geojsonLayer = L.geoJSON(peakList, {
-    pointToLayer: function (feature, latlng) {
-        // Ici, vous pouvez personnaliser le symbole du point.
-        // Par exemple, utilisons un marqueur rouge pour tous les points.
-        return L.marker(latlng, {
-            icon: L.icon({
-                iconUrl: 'static/images/mountain.svg', // Spécifiez le chemin de l'icône personnalisée
-                iconSize: [25, 41], // Taille de l'icône
-                iconAnchor: [12, 41], // Point d'ancrage de l'icône, généralement son centre en bas
-                popupAnchor: [0, -35] // Point d'ancrage du popup, en relation avec l'icône
-            })
-        });
-    },
-    onEachFeature: function (feature, layer) {
-        // Créer le contenu du popup
-        var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
-        layer.bindPopup(popupContent);
-    }
-}).addTo(map);
+function showLayer(peakList) {
+    peakMarkers = L.geoJSON(peakList, {
+        pointToLayer: function (feature, latlng) {
+            return L.marker(latlng, {
+                icon: L.icon({
+                    iconUrl: 'static/images/mountain.svg', // Spécifiez le chemin de l'icône personnalisée
+                    iconSize: [25, 41], // Taille de l'icône
+                    iconAnchor: [12, 41], // Point d'ancrage de l'icône, généralement son centre en bas
+                    popupAnchor: [0, -35] // Point d'ancrage du popup, en relation avec l'icône
+                })
+            });
+        },
+        onEachFeature: function (feature, layer) {
+            // Créer le contenu du popup
+            var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
+            layer.bindPopup(popupContent);
+        }
+    }).addTo(map);
+}
+
 
 
 function findMax(data) {
@@ -227,44 +228,83 @@ function findMin(data) {
 
 
 
-document.getElementById('find_bulle').addEventListener("click", function () {
-    if (user_position == '') {
-        // recupere la position de l'utilisateur
-        map.locate({ setView: true, watch: false, maxZoom: 14 })
+// Wait for the DOM content to be fully loaded
+document.addEventListener("DOMContentLoaded", function () {
+    var inputMinEle = document.getElementById("inputMinEle");
+    var inputMaxEle = document.getElementById("inputMaxEle");
 
-            .on('locationfound', async function (e) {
-                user_position = e.latlng
-                var popupup = L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent("Votre position")
-                    .openOn(map)
+    // Add event listener for keyup event
+    inputMinEle.addEventListener("keyup", function () {
+        var value = inputMinEle.value;
 
-                recherche_bulle(user_position, bounds_gd_lyon)
-            })
+        toto(peakList, inputMinEle.value, inputMaxEle.value)
 
+    });
+    inputMaxEle.addEventListener("keyup", function () {
+        var value = inputMaxEle.value;
 
-            .on('locationerror', function (e) {
-                alert("Où êtes vous?? Le service ne connait pas votre point de départ. Renseigner une adresse ou autoriser la geolocalisation dans votre navigateur ");
-            })
+        toto(peakList, inputMinEle.value, inputMaxEle.value)
+
+    });
+
+    inputMinEle.value = ""; // Set the value to an empty string
+    inputMaxEle.value = "";
+});
+
+function filterPeak(peakList, min, max) {
+    min = Number(min);
+    max = Number(max);
+    let filteredPeaks = { "type": "FeatureCollection", "features": [] };
+
+    let isMin = false
+    let isMax = false
+    if (min !== '' || min !== null || min !== undefined) {
+        isMin = true;
     }
-    else {
-        recherche_bulle(user_position, bounds_gd_lyon)
+    if (max !== '' || max !== null || max !== undefined) {
+        isMax = true;
     }
-}, false);
 
+    if (max === 0) {
+        max = findMax(peakList);
+    }
 
+    if (isMin && isMax) {
+        if (min < max || min === findMax(peakList)) {
+            peakList.features.forEach(peak => {
+                if (peak.properties.ele >= min && peak.properties.ele <= max) {
+                    filteredPeaks.features.push(peak);
+                }
+            });
+        } else {
+            return peakList;
+        }
+    }
+    else if (!isMin && isMax) {
+        peakList.features.forEach(peak => {
+            if (peak.properties.ele <= max) {
+                filteredPeaks.features.push(peak);
+            }
+        })
+    }
+    else if (isMin && !isMax) {
+        peakList.features.forEach(peak => {
+            if (peak.properties.ele >= min) {
+                filteredPeaks.features.push(peak);
+            }
+        })
+    } else {
+        return peakList;
+    }
 
+    return filteredPeaks;
+}
 
-
-
-
-
-
-
-
-
-
-
+function toto(peakList, min, max) {
+    const filteredPeaks = filterPeak(peakList, min, max);
+    map.removeLayer(peakMarkers);
+    showLayer(filteredPeaks);
+}
 
 
 
