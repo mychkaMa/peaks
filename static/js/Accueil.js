@@ -27,9 +27,7 @@ async function fetchAsync(url) {
     console.log('fetchAsync1', url);
     try {
         let response = await fetch(url);
-        console.log('fetchAsync2', response);
         let data = await response.json();
-        console.log('fetchAsync3', data);
         return data;
     } catch (error) {
         console.error('Erreur lors de la récupération des données:', error);
@@ -165,9 +163,17 @@ geocoderBAN.markGeocode = function (feature) {
 ///////////// Chargement des tous les commerces au 1er chargement////////////////
 /////////////////////////////////////////////////////////////////////////////////
 data = JSON.parse(document.getElementById("getdata").dataset.markers);
-data = data[0][0]
+peakList = data[0][0]
 
-var geojsonLayer = L.geoJSON(data, {
+const maxEle = findMax(peakList)
+var outputElement = document.getElementById("maxEle");
+outputElement.textContent = maxEle;
+
+const minEle = findMin(peakList)
+var outputElement = document.getElementById("minEle");
+outputElement.textContent = minEle;
+
+var geojsonLayer = L.geoJSON(peakList, {
     pointToLayer: function (feature, latlng) {
         // Ici, vous pouvez personnaliser le symbole du point.
         // Par exemple, utilisons un marqueur rouge pour tous les points.
@@ -187,6 +193,36 @@ var geojsonLayer = L.geoJSON(data, {
     }
 }).addTo(map);
 
+
+function findMax(data) {
+
+    var maxObject = null;
+
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.properties.ele;
+
+        if (maxObject === null || currentEle > maxObject) {
+            maxObject = currentEle;
+        }
+    }
+    return maxObject;
+}
+
+function findMin(data) {
+
+    var minObject = null;
+
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.properties.ele;
+
+        if (minObject === null || currentEle < minObject) {
+            minObject = currentEle;
+        }
+    }
+    return minObject;
+}
 
 
 
