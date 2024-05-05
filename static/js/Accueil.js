@@ -99,12 +99,6 @@ function affiche_commerces(data) {
     }
 
 
-    // Ajout du geoJSON
-    // Ajout des points, une couche par categorie de commerce
-
-
-
-
     var commerces = L.geoJson(data, {
 
         style: function (feature) {
@@ -171,6 +165,7 @@ outputElement.textContent = maxEle;
 const minEle = findMin(peakList)
 var outputElement = document.getElementById("minEle");
 outputElement.textContent = minEle;
+
 showLayer(peakList);
 
 function showLayer(peakList) {
@@ -230,25 +225,44 @@ function findMin(data) {
 
 // Wait for the DOM content to be fully loaded
 document.addEventListener("DOMContentLoaded", function () {
-    var inputMinEle = document.getElementById("inputMinEle");
-    var inputMaxEle = document.getElementById("inputMaxEle");
+    var inputMinEle = document.getElementById("fromInput");
+    inputMinEle.value = minEle;
+    inputMinEle.min = minEle;
+    var inputMaxEle = document.getElementById("toInput");
+    inputMaxEle.value = maxEle;
+    inputMaxEle.max = maxEle;
+    var sliderMinEle = document.getElementById("fromSlider");
+    sliderMinEle.value = minEle;
+    sliderMinEle.min = minEle;
+    var sliderMaxEle = document.getElementById("toSlider");
+    sliderMaxEle.value = maxEle;
+    sliderMaxEle.max = maxEle;
+
+    fillSlider(fromSlider, toSlider, '#C6C6C6', '#3E95B8', toSlider);
+
+    let minEleUser = minEle;
+    let maxEleUser = maxEle;
 
     // Add event listener for keyup event
     inputMinEle.addEventListener("keyup", function () {
-        var value = inputMinEle.value;
-
-        toto(peakList, inputMinEle.value, inputMaxEle.value)
-
+        minEleUser = inputMinEle.value;
+        toto(peakList, minEleUser, maxEleUser);
     });
     inputMaxEle.addEventListener("keyup", function () {
-        var value = inputMaxEle.value;
-
-        toto(peakList, inputMinEle.value, inputMaxEle.value)
-
+        maxEleUser = inputMaxEle.value;
+        toto(peakList, minEleUser, maxEleUser);
     });
 
-    inputMinEle.value = ""; // Set the value to an empty string
-    inputMaxEle.value = "";
+    sliderMinEle.addEventListener("mouseup", function () {
+        minEleUser = sliderMinEle.value;
+        toto(peakList, minEleUser, maxEleUser);
+    });
+    sliderMaxEle.addEventListener("mouseup", function () { //mousemove
+        maxEleUser = sliderMaxEle.value;
+        toto(peakList, minEleUser, maxEleUser);
+    });
+
+
 });
 
 function filterPeak(peakList, min, max) {
@@ -302,7 +316,10 @@ function filterPeak(peakList, min, max) {
 
 function toto(peakList, min, max) {
     const filteredPeaks = filterPeak(peakList, min, max);
-    map.removeLayer(peakMarkers);
+    if (peakMarkers) {
+        map.removeLayer(peakMarkers);
+    }
+
     showLayer(filteredPeaks);
 }
 
@@ -320,7 +337,7 @@ function toto(peakList, min, max) {
 
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
     const [from, to] = getParsed(fromInput, toInput);
-    fillSlider(fromInput, toInput, '#C6C6C6', '#25daa5', controlSlider);
+    fillSlider(fromInput, toInput, '#C6C6C6', '#3E95B8', controlSlider);
     if (from > to) {
         fromSlider.value = to;
         fromInput.value = to;
@@ -331,7 +348,7 @@ function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
 
 function controlToInput(toSlider, fromInput, toInput, controlSlider) {
     const [from, to] = getParsed(fromInput, toInput);
-    fillSlider(fromInput, toInput, '#C6C6C6', '#25daa5', controlSlider);
+    fillSlider(fromInput, toInput, '#C6C6C6', '#3E95B8', controlSlider);
     setToggleAccessible(toInput);
     if (from <= to) {
         toSlider.value = to;
@@ -343,7 +360,7 @@ function controlToInput(toSlider, fromInput, toInput, controlSlider) {
 
 function controlFromSlider(fromSlider, toSlider, fromInput) {
     const [from, to] = getParsed(fromSlider, toSlider);
-    fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+    fillSlider(fromSlider, toSlider, '#C6C6C6', '#3E95B8', toSlider);
     if (from > to) {
         fromSlider.value = to;
         fromInput.value = to;
@@ -354,7 +371,7 @@ function controlFromSlider(fromSlider, toSlider, fromInput) {
 
 function controlToSlider(fromSlider, toSlider, toInput) {
     const [from, to] = getParsed(fromSlider, toSlider);
-    fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+    fillSlider(fromSlider, toSlider, '#C6C6C6', '#3E95B8', toSlider);
     setToggleAccessible(toSlider);
     if (from <= to) {
         toSlider.value = to;
@@ -398,7 +415,7 @@ const fromSlider = document.querySelector('#fromSlider');
 const toSlider = document.querySelector('#toSlider');
 const fromInput = document.querySelector('#fromInput');
 const toInput = document.querySelector('#toInput');
-fillSlider(fromSlider, toSlider, '#C6C6C6', '#25daa5', toSlider);
+fillSlider(fromSlider, toSlider, '#C6C6C6', '#3E95B8', toSlider);
 setToggleAccessible(toSlider);
 
 fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput);

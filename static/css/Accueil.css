@@ -243,14 +243,14 @@ label::before {
 
 .sliders_control {
   position: relative;
-  min-height: 50px;
+  min-height: 10px;
 }
 
 .form_control {
   position: relative;
   display: flex;
   justify-content: space-between;
-  font-size: 24px;
+  font-size: 20px;
   color: #635a5a;
 }
 
@@ -286,8 +286,8 @@ input[type=range]::-webkit-slider-thumb:active {
 }
 
 input[type="number"] {
-  color: #8a8383;
-  width: 50px;
+  color: #3E95B8;
+  width: 80px;
   height: 30px;
   font-size: 20px;
   border: none;
