@@ -1,4 +1,3 @@
-var user_position = { lat: 45.756681, lng: 4.831715 };
 var peakMarkers = '';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,107 +67,49 @@ var scale = L.control.scale(
 ).addTo(map);
 
 
-
 /////////////////////////////////////////////////////////////////////////////////
-/////////////////////// Afficher les commerces sur la carte//////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-
-function affiche_commerces(data) {
-
-    // Ajout d'évènements : zoom + buffer + couleur
-    function mouse_events(feature, leaflet_object) {
-        leaflet_object.on('click', function (event) {
-            map.setView(event.latlng, 16);
-        });
-        leaflet_object.on('mouseover', function (event) {
-            var leaflet_object = event.target;
-            leaflet_object.setRadius(12),
-                leaflet_object.setStyle({
-                    color: "white",
-                    weight: 5
-                })
-        });
-        leaflet_object.on('mouseout', function (event) {
-            var leaflet_object = event.target;
-            leaflet_object.setStyle({
-                color: "white",
-                weight: 1
-            }),
-                leaflet_object.setRadius(6)
-        });
-    }
-
-
-    var commerces = L.geoJson(data, {
-
-        style: function (feature) {
-            return {
-                radius: 6,
-                color: 'white',
-                weight: 1,
-                fillOpacity: 1
-            }
-        },
-
-        pointToLayer: function (latlng) {
-            var marker = L.circleMarker(latlng);
-            marker.on('click', function (ev) { marker.openPopup(marker.getLatLng()) })
-            return marker
-        },
-
-        onEachFeature: mouse_events,
-
-    }).addTo(map);
-    // crer un control layer avec titre
-
-}
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Connaitre votre adresse ///////////////////////////
+///////////// Chargement des tous les peaks au 1er chargement////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-var geocoderBAN = L.geocoderBAN({
-    collapsed: false,
-    style: 'searchBar',
-    resultsNumber: 5,
-    placeholder: 'Entrez votre adresse'
-}).addTo(map)
-
-
-geocoderBAN.markGeocode = function (feature) {
-    var latlng = [feature.geometry.coordinates[1], feature.geometry.coordinates[0]]
-    map.setView(latlng, 14)
-    user_position = { lat: latlng[0], lng: latlng[1] };
-
-    var popup = L.popup()
-        .setLatLng(latlng)
-        .setContent(feature.properties.label)
-        .openOn(map)
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////
-///////////// Chargement des tous les commerces au 1er chargement////////////////
-/////////////////////////////////////////////////////////////////////////////////
 data = JSON.parse(document.getElementById("getdata").dataset.markers);
-peakList = data[0][0]
+peakList = data[0][0];
+addLayer(peakList);
 
-const maxEle = findMax(peakList)
+const maxPeak = findMax(peakList);
+const maxEle = maxPeak.properties.ele;
 var outputElement = document.getElementById("maxEle");
 outputElement.textContent = maxEle;
+//var maxMarker = L.marker([maxPeak.geometry.coordinates[1], maxPeak.geometry.coordinates[0]]).addTo(map);
 
-const minEle = findMin(peakList)
+function showMaxPeak() {
+    map.setView([maxPeak.geometry.coordinates[1], maxPeak.geometry.coordinates[0]], 15);
+    peakMarkers.eachLayer(function (layer) {
+        var feature = layer.feature;
+        if (feature.properties.ele === maxEle) {
+            var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
+            layer.bindPopup(popupContent).openPopup();
+        }
+    });
+}
+
+const minPeak = findMin(peakList);
+const minEle = minPeak.properties.ele;
 var outputElement = document.getElementById("minEle");
 outputElement.textContent = minEle;
+//var minMarker = L.marker([minPeak.geometry.coordinates[1], minPeak.geometry.coordinates[0]]).addTo(map);
 
-showLayer(peakList);
+function showMinPeak() {
+    map.setView([minPeak.geometry.coordinates[1], minPeak.geometry.coordinates[0]], 15);
+    peakMarkers.eachLayer(function (layer) {
+        var feature = layer.feature;
+        if (feature.properties.ele === minEle) {
+            var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
+            layer.bindPopup(popupContent).openPopup();
+        }
+    });
+}
 
-function showLayer(peakList) {
+function addLayer(peakList) {
     peakMarkers = L.geoJSON(peakList, {
         pointToLayer: function (feature, latlng) {
             return L.marker(latlng, {
@@ -181,49 +122,46 @@ function showLayer(peakList) {
             });
         },
         onEachFeature: function (feature, layer) {
-            // Créer le contenu du popup
             var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
             layer.bindPopup(popupContent);
         }
     }).addTo(map);
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Stats /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 function findMax(data) {
-
     var maxObject = null;
-
     for (var i = 0; i < data.features.length; i++) {
         var currentFeature = data.features[i];
         var currentEle = currentFeature.properties.ele;
 
-        if (maxObject === null || currentEle > maxObject) {
-            maxObject = currentEle;
+        if (maxObject === null || currentEle > maxObject.properties.ele) {
+            maxObject = currentFeature;
         }
     }
     return maxObject;
 }
 
 function findMin(data) {
-
     var minObject = null;
-
     for (var i = 0; i < data.features.length; i++) {
         var currentFeature = data.features[i];
         var currentEle = currentFeature.properties.ele;
 
-        if (minObject === null || currentEle < minObject) {
-            minObject = currentEle;
+        if (minObject === null || currentEle < minObject.properties.ele) {
+            minObject = currentFeature;
         }
     }
     return minObject;
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Init //////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
-
-
-// Wait for the DOM content to be fully loaded
 document.addEventListener("DOMContentLoaded", function () {
     var inputMinEle = document.getElementById("fromInput");
     inputMinEle.value = minEle;
@@ -280,11 +218,11 @@ function filterPeak(peakList, min, max) {
     }
 
     if (max === 0) {
-        max = findMax(peakList);
+        max = maxEle;
     }
 
     if (isMin && isMax) {
-        if (min < max || min === findMax(peakList)) {
+        if (min < max || min === maxEle) {
             peakList.features.forEach(peak => {
                 if (peak.properties.ele >= min && peak.properties.ele <= max) {
                     filteredPeaks.features.push(peak);
@@ -319,21 +257,13 @@ function toto(peakList, min, max) {
     if (peakMarkers) {
         map.removeLayer(peakMarkers);
     }
-
-    showLayer(filteredPeaks);
+    addLayer(filteredPeaks);
 }
 
 
-
-
-
-
-
-
-
-
-
-
+/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// Slider & Input /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
     const [from, to] = getParsed(fromInput, toInput);

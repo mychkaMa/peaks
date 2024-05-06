@@ -43,21 +43,8 @@ def index():
     cursor = get_all_data()
     markers=cursor.fetchall()
 
-    print('markers', markers)
-
     return render_template("Accueil.html", markers=markers)
 
-
-
-
-
-@app.route('/Qui-sommes-nous')
-def qui_sommes_nous():
-    return render_template("Qui-sommes-nous.html")
-
-@app.route('/A-propos')
-def a_propos():
-    return render_template("A-propos.html")
 
 @app.route('/Tutoriel')
 def tuto():
