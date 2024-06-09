@@ -76,6 +76,24 @@ data = JSON.parse(document.getElementById("getdata").dataset.markers);
 peakList = data[0][0];
 addLayer(peakList);
 
+
+/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Stats min max ele ////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+function findMax(data) {
+    var maxObject = null;
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.properties.ele;
+
+        if (maxObject === null || currentEle > maxObject.properties.ele) {
+            maxObject = currentFeature;
+        }
+    }
+    return maxObject;
+}
+
 const maxPeak = findMax(peakList);
 const maxEle = maxPeak.properties.ele;
 var outputElement = document.getElementById("maxEle");
@@ -91,6 +109,20 @@ function showMaxPeak() {
             layer.bindPopup(popupContent).openPopup();
         }
     });
+}
+
+
+function findMin(data) {
+    var minObject = null;
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.properties.ele;
+
+        if (minObject === null || currentEle < minObject.properties.ele) {
+            minObject = currentFeature;
+        }
+    }
+    return minObject;
 }
 
 const minPeak = findMin(peakList);
@@ -109,6 +141,56 @@ function showMinPeak() {
         }
     });
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Stats min max long ///////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+function findMaxLong(data) {
+    var maxLongObject = null;
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.geometry.coordinates[0];
+
+        if (maxLongObject === null || currentEle > maxLongObject.geometry.coordinates[0]) {
+            maxLongObject = currentFeature;
+        }
+    }
+    console.log('maxLongObject', maxLongObject);
+    return maxLongObject;
+}
+
+const maxLongPeak = findMaxLong(peakList);
+console.log('maxLongPeak', maxLongPeak);
+const maxLong = maxLongPeak.geometry.coordinates[0];
+console.log('maxLong', maxLong);
+//var outputElement = document.getElementById("maxEle");
+//outputElement.textContent = maxEle;
+
+function findMinLong(data) {
+    var minLongObject = null;
+    for (var i = 0; i < data.features.length; i++) {
+        var currentFeature = data.features[i];
+        var currentEle = currentFeature.geometry.coordinates[0];
+
+        if (minLongObject === null || currentEle < minLongObject.geometry.coordinates[0]) {
+            minLongObject = currentFeature;
+        }
+    }
+    console.log('minLongObject', minLongObject);
+    return minLongObject;
+}
+
+const minLongPeak = findMinLong(peakList);
+console.log('minLongPeak', minLongPeak);
+const minLong = minLongPeak.geometry.coordinates[0];
+console.log('minLong', minLong);
+
+
+
+
+
+
 
 function addLayer(peakList) {
     peakMarkers = L.geoJSON(peakList, {
@@ -146,35 +228,7 @@ function createHikeLink(nodeId) {
     return link;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////// Stats /////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
 
-function findMax(data) {
-    var maxObject = null;
-    for (var i = 0; i < data.features.length; i++) {
-        var currentFeature = data.features[i];
-        var currentEle = currentFeature.properties.ele;
-
-        if (maxObject === null || currentEle > maxObject.properties.ele) {
-            maxObject = currentFeature;
-        }
-    }
-    return maxObject;
-}
-
-function findMin(data) {
-    var minObject = null;
-    for (var i = 0; i < data.features.length; i++) {
-        var currentFeature = data.features[i];
-        var currentEle = currentFeature.properties.ele;
-
-        if (minObject === null || currentEle < minObject.properties.ele) {
-            minObject = currentFeature;
-        }
-    }
-    return minObject;
-}
 
 /////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// Init //////////////////////////////////////
@@ -193,6 +247,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var sliderMaxEle = document.getElementById("toSlider");
     sliderMaxEle.value = maxEle;
     sliderMaxEle.max = maxEle;
+
+    var inputMinLong = document.getElementById("fromX");
+    // inputMinLong.value = minEle;
+    // inputMinLong.min = minEle;
+    var inputMaxLong = document.getElementById("toX");
+    // inputMaxLong.value = maxEle;
+    // inputMaxLong.max = maxEle;
 
     fillSlider(fromSlider, toSlider, '#C6C6C6', '#3E95B8', toSlider);
 
@@ -218,10 +279,21 @@ document.addEventListener("DOMContentLoaded", function () {
         showFilteredPeaks(peakList, minEleUser, maxEleUser);
     });
 
+    inputMinLong.addEventListener("mouseup", function () {
+        minLongUser = inputMinLong.value;
+        //maxLongUser = 9;
+        filterPeakCoord(peakList, minLongUser, maxLongUser);
+        //showFilteredPeaks(peakList, minEleUser, maxEleUser);
+    });
+    inputMaxLong.addEventListener("mouseup", function () { //mousemove
+        maxLongUser = inputMaxLong.value;
+        filterPeakCoord(peakList, minLongUser, maxLongUser);
+    });
+
 
 });
 
-function filterPeak(peakList, min, max) {
+function filterPeakAlt(peakList, min, max) {
     min = Number(min);
     max = Number(max);
     let filteredPeaks = { "type": "FeatureCollection", "features": [] };
@@ -269,8 +341,60 @@ function filterPeak(peakList, min, max) {
     return filteredPeaks;
 }
 
+
+
+function filterPeakCoord(peakList, minX, maxX) {
+    minX = Number(minX);
+    maxX = Number(maxX);
+    let filteredPeaks = { "type": "FeatureCollection", "features": [] };
+    console.log('peaks', peakList);
+    //console.log('peaks', peakList.geometry.coordinates);
+
+    let isMin = false
+    let isMax = false
+    if (minX !== '' || minX !== null || minX !== undefined) {
+        isMin = true;
+    }
+    if (maxX !== '' || maxX !== null || maxX !== undefined) {
+        isMax = true;
+    }
+    // if (maxX === 0) {
+    //     maxX = maxEle;
+    // }
+
+    if (isMin && isMax) {
+        if (minX < maxX || minX === maxEle) {
+            peakList.features.forEach(peak => {
+                if (peak.geometry.coordinates[0] >= minX && peak.geometry.coordinates[0] <= maxX) {
+                    filteredPeaks.features.push(peak);
+                }
+            });
+        } else {
+            return peakList;
+        }
+    }
+    // else if (!isMin && isMax) {
+    //     peakList.features.forEach(peak => {
+    //         if (peak.properties.ele <= maxX) {
+    //             filteredPeaks.features.push(peak);
+    //         }
+    //     })
+    // }
+    // else if (isMin && !isMax) {
+    //     peakList.features.forEach(peak => {
+    //         if (peak.properties.ele >= minX) {
+    //             filteredPeaks.features.push(peak);
+    //         }
+    //     })
+    // } else {
+    //     return peakList;
+    // }
+    console.log('filteredPeaks', filteredPeaks)
+    return filteredPeaks;
+}
+
 function showFilteredPeaks(peakList, min, max) {
-    const filteredPeaks = filterPeak(peakList, min, max);
+    const filteredPeaks = filterPeakAlt(peakList, min, max);
     if (peakMarkers) {
         map.removeLayer(peakMarkers);
     }
