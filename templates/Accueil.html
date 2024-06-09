@@ -26,6 +26,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.legend.css') }}">
   <script src="{{ url_for('static', filename='js/leaflet.legend.js') }}"></script>
 
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/L.Grid.css') }}">
+  <script src="{{ url_for('static', filename='js/L.Grid.js') }}"></script>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"
     charset="utf-8"></script>
@@ -95,14 +98,14 @@
 
         <div class="form_control">
           <div class="form_control_container">
-            <div class="form_control_container__time">Min</div>
             <input class="form_control_container__time__input" type="number" id="fromInput" maxlength="4" size="50"
               placeholder="min" />
+            <div class="form_control_container__time">Min</div>
           </div>
           <div class="form_control_container">
-            <div class="form_control_container__time">Max</div>
             <input class="form_control_container__time__input" type="number" id="toInput" maxlength="4" size="5"
               placeholder="max" />
+            <div class="form_control_container__time">Max</div>
           </div>
         </div>
       </div>

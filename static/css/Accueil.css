@@ -34,6 +34,11 @@
   border: 2px solid rgb(62, 149, 184) !important;
 }
 
+.leaflet-grid-label .lng {
+  margin-left: 8px;
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
 
 @import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
 
@@ -288,7 +293,7 @@ input[type=range]::-webkit-slider-thumb:active {
 input[type="number"] {
   color: #3E95B8;
   width: 80px;
-  height: 30px;
+  height: 20px;
   font-size: 20px;
   border: none;
 }

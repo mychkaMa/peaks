@@ -66,6 +66,7 @@ var scale = L.control.scale(
     },
 ).addTo(map);
 
+L.grid().addTo(map);
 
 /////////////////////////////////////////////////////////////////////////////////
 ///////////// Chargement des tous les peaks au 1er chargement////////////////
@@ -82,7 +83,7 @@ outputElement.textContent = maxEle;
 //var maxMarker = L.marker([maxPeak.geometry.coordinates[1], maxPeak.geometry.coordinates[0]]).addTo(map);
 
 function showMaxPeak() {
-    map.setView([maxPeak.geometry.coordinates[1], maxPeak.geometry.coordinates[0]], 15);
+    map.setView([maxPeak.geometry.coordinates[1], maxPeak.geometry.coordinates[0]], 14);
     peakMarkers.eachLayer(function (layer) {
         var feature = layer.feature;
         if (feature.properties.ele === maxEle) {
@@ -99,7 +100,7 @@ outputElement.textContent = minEle;
 //var minMarker = L.marker([minPeak.geometry.coordinates[1], minPeak.geometry.coordinates[0]]).addTo(map);
 
 function showMinPeak() {
-    map.setView([minPeak.geometry.coordinates[1], minPeak.geometry.coordinates[0]], 15);
+    map.setView([minPeak.geometry.coordinates[1], minPeak.geometry.coordinates[0]], 14);
     peakMarkers.eachLayer(function (layer) {
         var feature = layer.feature;
         if (feature.properties.ele === minEle) {
@@ -122,10 +123,27 @@ function addLayer(peakList) {
             });
         },
         onEachFeature: function (feature, layer) {
-            var popupContent = `<b>Nom</b> : ${feature.properties.name}\n<b>Élevation</b> : ${feature.properties.ele} m <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>`;
+            const link = createHikeLink(feature.properties.id);
+            var popupContent_ = `<b>Nom</b> : ${feature.properties.name}\n
+            <b>Élevation</b> : ${feature.properties.ele} m 
+            <a href="https://www.openstreetmap.org/${feature.properties.id}" target="_blank">OSM</a>
+            <a href="${link}" target="_blank">link</a>`;
+
+            var popupContent = `<a href="${link}" target="_blank">link</a>`;
+
             layer.bindPopup(popupContent);
         }
     }).addTo(map);
+}
+
+function createHikeLink(nodeId) {
+    const parts = nodeId.split('/');
+    const id = parts[parts.length - 1];
+    const idNum = Number(id);
+
+    const link = `https://overpass-turbo.eu/?Q=[out:json][timeout:25];node(${idNum});way["highway"="path"](around:2000);out geom;&R`;
+
+    return link;
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -184,20 +202,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // Add event listener for keyup event
     inputMinEle.addEventListener("keyup", function () {
         minEleUser = inputMinEle.value;
-        toto(peakList, minEleUser, maxEleUser);
+        showFilteredPeaks(peakList, minEleUser, maxEleUser);
     });
     inputMaxEle.addEventListener("keyup", function () {
         maxEleUser = inputMaxEle.value;
-        toto(peakList, minEleUser, maxEleUser);
+        showFilteredPeaks(peakList, minEleUser, maxEleUser);
     });
 
     sliderMinEle.addEventListener("mouseup", function () {
         minEleUser = sliderMinEle.value;
-        toto(peakList, minEleUser, maxEleUser);
+        showFilteredPeaks(peakList, minEleUser, maxEleUser);
     });
     sliderMaxEle.addEventListener("mouseup", function () { //mousemove
         maxEleUser = sliderMaxEle.value;
-        toto(peakList, minEleUser, maxEleUser);
+        showFilteredPeaks(peakList, minEleUser, maxEleUser);
     });
 
 
@@ -216,7 +234,6 @@ function filterPeak(peakList, min, max) {
     if (max !== '' || max !== null || max !== undefined) {
         isMax = true;
     }
-
     if (max === 0) {
         max = maxEle;
     }
@@ -252,14 +269,13 @@ function filterPeak(peakList, min, max) {
     return filteredPeaks;
 }
 
-function toto(peakList, min, max) {
+function showFilteredPeaks(peakList, min, max) {
     const filteredPeaks = filterPeak(peakList, min, max);
     if (peakMarkers) {
         map.removeLayer(peakMarkers);
     }
     addLayer(filteredPeaks);
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// Slider & Input /////////////////////////////////
